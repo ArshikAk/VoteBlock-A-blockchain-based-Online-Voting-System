@@ -9,6 +9,10 @@ const candidateSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    profile : {
+        type: String,
+        required: true,
+    },
     logo : {
         type: String,
         required: true,

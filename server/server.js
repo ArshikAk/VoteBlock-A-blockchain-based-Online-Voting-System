@@ -23,3 +23,5 @@ mongoose.connect(process.env.MONGO_DB_URL)
 
 app.use("/api/auth", require("./routes/authRoutes"))
 app.use("/api/user", require("./routes/userRoutes"))
+app.use("/api/blockchain", require("./routes/blockChainRoutes"))
+app.use("/api/admin", require("./routes/adminRoutes"))
