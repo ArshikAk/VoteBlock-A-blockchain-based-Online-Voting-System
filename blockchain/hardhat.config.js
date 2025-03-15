@@ -13,12 +13,6 @@ module.exports = {
     localhost: {
         url: "http://127.0.0.1:8545",
     },
-    ganache: {
-      url: "http://127.0.0.1:8545",
-      accounts: [
-        "0x8fc47ff311ff44f65833e86fbee413843757efb6ca0c1106541945a3c00b3bd5"
-      ],
-    },
   },
   namedAccounts: {
     deployer: {

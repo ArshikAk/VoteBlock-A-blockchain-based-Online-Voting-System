@@ -4,7 +4,6 @@ pragma solidity ^0.8.28;
 contract VoteBlock {
     struct Candidate {
         string name;
-        string party;
         uint voteCount;
     }
 
@@ -12,12 +11,22 @@ contract VoteBlock {
         bool hasVoted;
     }
 
-    address public admin;
-    mapping(string => Voter) public voters;
-    Candidate[] public candidates;
+    struct EncryptedVote {
+        string encryptedVoterId;
+        string votedCandidate;
+    }
 
-    event CandidateAdded(string name, string party);
-    event VoteCasted(string userId);
+    address public admin;
+
+    mapping(string => Voter) public voters;
+    mapping(string => uint) public candidateIndex;
+
+    Candidate[] public candidates;
+    EncryptedVote[] public encryptedVotes;
+
+    event CandidateAdded(string name);
+    event VoteCasted(string candidateName);
+    event EncryptedVoteRecorded(string encryptedVoterId);
 
     constructor() {
         admin = msg.sender;
@@ -28,34 +37,56 @@ contract VoteBlock {
         _;
     }
 
-    function addCandidate(string memory _name, string memory _party) public onlyAdmin {
-        candidates.push(Candidate(_name, _party, 0));
-        emit CandidateAdded(_name, _party);
+
+    function addCandidate(string memory _name) public onlyAdmin {
+        require(candidateIndex[_name] == 0 && (candidates.length == 0 || keccak256(abi.encodePacked(candidates[0].name)) != keccak256(abi.encodePacked(_name))), "Candidate already exists");
+        candidates.push(Candidate(_name, 0));
+        candidateIndex[_name] = candidates.length - 1;
+        emit CandidateAdded(_name);
     }
 
-    function vote(string memory _userId, string memory _name) public {
-        require(!voters[_userId].hasVoted, "Already voted!");
+
+    function addCandidates(string[] memory _nameList) public onlyAdmin {
+        for (uint i = 0; i < _nameList.length; i++) {
+            string memory _name = _nameList[i];
+            require(candidateIndex[_name] == 0 && (candidates.length == 0 || keccak256(abi.encodePacked(candidates[0].name)) != keccak256(abi.encodePacked(_name))), "Candidate already exists");
+            candidates.push(Candidate(_name, 0));
+            candidateIndex[_name] = candidates.length - 1;
+            emit CandidateAdded(_name);
+        }
+    }
+
+
+    function vote(string memory _userId, string memory _candidateName, string memory _encryptedVoterId) public {
+        
+        require(!voters[_userId].hasVoted, "You have already voted!");
+        require(candidates.length > 0, "No candidates available");
+
+        uint index = candidateIndex[_candidateName];
+        require(index < candidates.length && keccak256(abi.encodePacked(candidates[index].name)) == keccak256(abi.encodePacked(_candidateName)), "Candidate not found");
 
         voters[_userId].hasVoted = true;
+        candidates[index].voteCount++;
 
-        for(uint i = 0; i < candidates.length; i++)
-        {
-            if(keccak256(abi.encodePacked(candidates[i].name)) == keccak256(abi.encodePacked(_name)))
-            {
-                candidates[i].voteCount++;
-            }
-        }
-        
+        encryptedVotes.push(EncryptedVote(_encryptedVoterId, _candidateName));
 
-        emit VoteCasted(_userId);
+        emit VoteCasted(_candidateName);
+        emit EncryptedVoteRecorded(_encryptedVoterId);
     }
 
-    function getCandidates() public view returns (Candidate[] memory) {
+    function hasVoted(string memory _userId) public view returns (bool) {
+        return voters[_userId].hasVoted;
+    }
+
+    function getResults() public view returns (Candidate[] memory) {
         return candidates;
     }
 
-    function getCandidateVotes(uint _candidateIndex) public view returns (uint) {
-        require(_candidateIndex < candidates.length, "Invalid candidate!");
-        return candidates[_candidateIndex].voteCount;
+    function getEncryptedVotes() public view returns (EncryptedVote[] memory) {
+        return encryptedVotes;
+    }
+
+    function getEncryptedVoteCount() public view returns (uint) {
+        return encryptedVotes.length;
     }
 }

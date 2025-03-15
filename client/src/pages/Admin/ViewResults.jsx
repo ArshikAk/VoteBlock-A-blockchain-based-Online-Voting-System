@@ -1,32 +1,15 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "../../components/SideBar";
 import axios from "axios"
 
 const ViewResults = () => {
-  const results = [
-    { 
-      name: "John Doe", 
-      party: "Democratic Party", 
-      logo: "https://via.placeholder.com/50", 
-      votes: 3500 
-    },
-    { 
-      name: "Jane Smith", 
-      party: "Republican Party", 
-      logo: "https://via.placeholder.com/50", 
-      votes: 2800 
-    },
-    { 
-      name: "Alex Johnson", 
-      party: "Independent", 
-      logo: "https://via.placeholder.com/50", 
-      votes: 1200 
-    }
-  ];
+
+  const [results, setResults] = useState(null)
 
   useEffect(() => {
-    axios.get('http://127.0.0.1:8000/api/blockchain/getBlockChainCandidates')
+    axios.get('http://127.0.0.1:8000/api/blockchain/getResults')
     .then(response => {
+      setResults(response.data)
       console.log(response.data);
     })
     .catch(error => {
@@ -49,14 +32,15 @@ const ViewResults = () => {
               </tr>
             </thead>
             <tbody>
-              {results.map((candidate, index) => (
+              {results &&
+              results.map((candidate, index) => (
                 <tr key={index} className="border border-gray-300 hover:bg-gray-100">
                   <td className="border border-gray-300 p-3 flex items-center space-x-2">
                     <img src={candidate.logo} alt="Party Logo" className="w-8 h-8 rounded-full"/>
                     <span>{candidate.name}</span>
                   </td>
                   <td className="border border-gray-300 p-3">{candidate.party}</td>
-                  <td className="border border-gray-300 p-3 text-center font-bold">{candidate.votes}</td>
+                  <td className="border border-gray-300 p-3 text-center font-bold">{candidate.voteCount}</td>
                 </tr>
               ))}
             </tbody>

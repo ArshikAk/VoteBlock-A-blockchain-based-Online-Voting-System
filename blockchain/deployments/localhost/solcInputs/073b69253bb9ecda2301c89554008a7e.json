@@ -1,0 +1,36 @@
+{
+  "language": "Solidity",
+  "sources": {
+    "contracts/VoteBlock.sol": {
+      "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.28;\r\n\r\ncontract VoteBlock {\r\n    struct Candidate {\r\n        string name;\r\n        uint voteCount;\r\n    }\r\n\r\n    struct Voter {\r\n        bool hasVoted;\r\n    }\r\n\r\n    struct EncryptedVote {\r\n        string encryptedVoterId;\r\n        string votedCandidate;\r\n    }\r\n\r\n    address public admin;\r\n\r\n    mapping(string => Voter) public voters;\r\n    mapping(string => uint) public candidateIndex;\r\n\r\n    Candidate[] public candidates;\r\n    EncryptedVote[] public encryptedVotes;\r\n\r\n    event CandidateAdded(string name);\r\n    event VoteCasted(string candidateName);\r\n    event EncryptedVoteRecorded(string encryptedVoterId);\r\n\r\n    constructor() {\r\n        admin = msg.sender;\r\n    }\r\n\r\n    modifier onlyAdmin() {\r\n        require(msg.sender == admin, \"Only admin can perform this action\");\r\n        _;\r\n    }\r\n\r\n\r\n    function addCandidate(string memory _name) public onlyAdmin {\r\n        require(candidateIndex[_name] == 0 && (candidates.length == 0 || keccak256(abi.encodePacked(candidates[0].name)) != keccak256(abi.encodePacked(_name))), \"Candidate already exists\");\r\n        candidates.push(Candidate(_name, 0));\r\n        candidateIndex[_name] = candidates.length - 1;\r\n        emit CandidateAdded(_name);\r\n    }\r\n\r\n\r\n    function addCandidates(string[] memory _nameList) public onlyAdmin {\r\n        for (uint i = 0; i < _nameList.length; i++) {\r\n            string memory _name = _nameList[i];\r\n            require(candidateIndex[_name] == 0 && (candidates.length == 0 || keccak256(abi.encodePacked(candidates[0].name)) != keccak256(abi.encodePacked(_name))), \"Candidate already exists\");\r\n            candidates.push(Candidate(_name, 0));\r\n            candidateIndex[_name] = candidates.length - 1;\r\n            emit CandidateAdded(_name);\r\n        }\r\n    }\r\n\r\n\r\n    function vote(string memory _userId, string memory _candidateName, string memory _encryptedVoterId) public {\r\n        \r\n        require(!voters[_userId].hasVoted, \"You have already voted!\");\r\n        require(candidates.length > 0, \"No candidates available\");\r\n\r\n        uint index = candidateIndex[_candidateName];\r\n        require(index < candidates.length && keccak256(abi.encodePacked(candidates[index].name)) == keccak256(abi.encodePacked(_candidateName)), \"Candidate not found\");\r\n\r\n        voters[_userId].hasVoted = true;\r\n        candidates[index].voteCount++;\r\n\r\n        encryptedVotes.push(EncryptedVote(_encryptedVoterId, _candidateName));\r\n\r\n        emit VoteCasted(_candidateName);\r\n        emit EncryptedVoteRecorded(_encryptedVoterId);\r\n    }\r\n\r\n    function hasVoted(string memory _userId) public view returns (bool) {\r\n        return voters[_userId].hasVoted;\r\n    }\r\n\r\n    function getResults() public view returns (Candidate[] memory) {\r\n        return candidates;\r\n    }\r\n\r\n    function getEncryptedVotes() public view returns (EncryptedVote[] memory) {\r\n        return encryptedVotes;\r\n    }\r\n\r\n    function getEncryptedVoteCount() public view returns (uint) {\r\n        return encryptedVotes.length;\r\n    }\r\n}\r\n"
+    }
+  },
+  "settings": {
+    "evmVersion": "paris",
+    "optimizer": {
+      "enabled": false,
+      "runs": 200
+    },
+    "outputSelection": {
+      "*": {
+        "*": [
+          "abi",
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "evm.methodIdentifiers",
+          "metadata",
+          "devdoc",
+          "userdoc",
+          "storageLayout",
+          "evm.gasEstimates"
+        ],
+        "": [
+          "ast"
+        ]
+      }
+    },
+    "metadata": {
+      "useLiteralContent": true
+    }
+  }
+}

@@ -1,5 +1,5 @@
 const userModel = require("../models/userSchema")
-const candidateModel = require("../models/userSchema")
+const candidateModel = require("../models/candidateSchema")
 
 exports.getDashBoardData = async (req,res) => {
     try {
