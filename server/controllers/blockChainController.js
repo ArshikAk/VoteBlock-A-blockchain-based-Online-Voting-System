@@ -56,3 +56,22 @@ exports.castVote = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.getBlockChainCandidates = async (req,res) => {
+  try {
+    const candidates = await contract.getCandidates(); 
+    
+    const formattedCandidates = candidates.map(candidate => ({
+      name: candidate.name,
+      party: candidate.party,
+      voteCount: Number(candidate.voteCount)
+    }));
+
+    console.log(formattedCandidates)
+
+    res.json(formattedCandidates);
+  }
+  catch (error) {
+    console.log(error)
+  }
+}

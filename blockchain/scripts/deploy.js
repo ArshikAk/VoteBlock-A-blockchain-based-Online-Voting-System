@@ -10,10 +10,10 @@ async function main() {
   console.log("VoteBlock contract deployed to:", voteBlock.target);
 }
 
-// Execute deployment
 main()
   .then(() => process.exit(0))
   .catch((error) => {
     console.error(error);
     process.exit(1);
   });
+

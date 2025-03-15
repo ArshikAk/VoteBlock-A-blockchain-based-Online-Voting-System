@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import Sidebar from "../../components/SideBar";
+import axios from "axios"
 
 const ViewResults = () => {
   const results = [
@@ -21,6 +23,16 @@ const ViewResults = () => {
       votes: 1200 
     }
   ];
+
+  useEffect(() => {
+    axios.get('http://127.0.0.1:8000/api/blockchain/getBlockChainCandidates')
+    .then(response => {
+      console.log(response.data);
+    })
+    .catch(error => {
+      console.error(error);
+    })
+  },[])
 
   return (
     <div className="flex">
